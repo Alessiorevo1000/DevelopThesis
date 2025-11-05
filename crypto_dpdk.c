@@ -115,7 +115,6 @@ int crypto_dpdk_init(void) {
     // Configure queue pair
     qp_conf.nb_descriptors = NUM_CRYPTO_OPS;
     qp_conf.mp_session = session_pool;
-    qp_conf.mp_session_private = session_priv_pool;
     
     if (rte_cryptodev_queue_pair_setup(crypto_dev_id, 0, &qp_conf, socket_id) < 0) {
         printf("Failed to setup queue pair\n");
@@ -193,7 +192,7 @@ int crypto_dpdk_encrypt(const uint8_t *plaintext, int plaintext_len,
     }
     
     // Append IV + data to mbuf
-    uint8_t *data = rte_pktmbuf_append(mbuf, 16 + plaintext_len);
+    uint8_t *data = (uint8_t *)rte_pktmbuf_append(mbuf, 16 + plaintext_len);
     if (data == NULL) {
         printf("Failed to append data to mbuf\n");
         rte_pktmbuf_free(mbuf);
@@ -313,7 +312,7 @@ int crypto_dpdk_decrypt(const uint8_t *ciphertext, int ciphertext_len,
     }
     
     // Append IV + data to mbuf
-    uint8_t *data = rte_pktmbuf_append(mbuf, 16 + ciphertext_len);
+    uint8_t *data = (uint8_t *)rte_pktmbuf_append(mbuf, 16 + ciphertext_len);
     if (data == NULL) {
         printf("Failed to append data to mbuf\n");
         rte_pktmbuf_free(mbuf);
@@ -431,7 +430,7 @@ int crypto_dpdk_hmac_sha256(const uint8_t *data, size_t data_len,
         return -1;
     }
     
-    uint8_t *buf = rte_pktmbuf_append(mbuf, data_len + 32);
+    uint8_t *buf = (uint8_t *)rte_pktmbuf_append(mbuf, data_len + 32);
     if (buf == NULL) {
         printf("Failed to append data to mbuf\n");
         rte_pktmbuf_free(mbuf);
@@ -503,6 +502,10 @@ int crypto_dpdk_hmac_sha256(const uint8_t *data, size_t data_len,
 int crypto_sessions_init(const uint8_t *aes_key, size_t aes_key_len,
                          const uint8_t *hmac_key, size_t hmac_key_len) {
     // Not needed - we create sessions per operation
+    (void)aes_key;
+    (void)aes_key_len;
+    (void)hmac_key;
+    (void)hmac_key_len;
     printf("Using per-operation crypto sessions\n");
     return 0;
 }
